@@ -1,0 +1,2107 @@
+				;file E:\				;1	//products mode:   MW
+				;2	//functional description: 
+				;3	//MCU mode:        HT66F018
+				;4	//MCU frequency:   8MHz
+				;5	//designer:        xj.jiang
+				;6	//data:    2018/7/27 10:58
+				;7	//record:
+				;8	
+				;9	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				;10	#include "base.h"
+				;11	#define EXTERN
+				;12	#define VAR_DEFINE
+				;13	#include "Var.h"
+				;14	void PowerDownFunc(void);
+				;15	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				;16	void main()
+				;17	{
+				@code .SECTION 'CODE'
+				include HT66F018.inc
+0000	2821	jmp     begin_startup_value
+0001	0201	sub     a, MP0
+				startupend3:
+				@start .SECTION 'CODE'
+005B	286A	jmp     _main
+				startup_value:
+				@ROMDATA_BASE .SECTION 'CODE'
+005C	000C	jmp     L000C
+005D	00BD	mov     TM1RPH, a
+				;18	    InitSys();				//				_main:
+				_main:
+006A	2267	call    _InitSys
+				;19	    InitRam();				//RAM006B	22B5	call    _InitRam
+				;20	
+				;21		PowerOnTips();			//006C	2003	call    _PowerOnTips
+				;22	
+				;23	    while(1)
+				;24	    {
+				;25	        GCC_CLRWDT();		//				_L4:
+006D	0001	clr     wdt
+				;26	        Func();				//006E	21CC	call    _Func
+				;27			if(TaskADCRdyFlag)
+006F	78BB	snz     maiFlagB[0].1
+0070	2873	jmp     _L2
+				;28			{
+				;29				TaskADCRdyFlag = false;
+0071	74BB	clr     maiFlagB[0].1
+				;30		        GetAdcDat();		//NTC0072	207B	call    _GetAdcDat
+				;31			}
+				;32			if(TaskKeyRdy)
+				_L2:
+0073	7ABA	snz     LEDG[0].5
+0074	2878	jmp     _L3
+				;33			{
+				;34				TaskKeyRdy = false;
+0075	76BA	clr     LEDG[0].5
+				;35		        GetSwitch();	//0076	2385	call    _GetSwitch
+				;36		        GetKey();		//0077	2324	call    _GetKey
+				;37			}
+				;38			PowerDownFunc();	//				_L3:
+0078	2002	call    _PowerDownFunc
+				;39	    }
+0079	286D	jmp     _L4
+007A	287A	jmp     $
+				;40	}
+				;file E:\				;1	#include "base.h"
+				;2	#define EXTERN extern
+				;3	#include "Var.h"
+				;4	unsigned char InitEepRom(void)
+				;5	{
+				;6	/*	unsigned char i,j;
+				;7	    _eea = 0x11;
+				;8	    _mp1 = 0x40;
+				;9	    _bp = 1;
+				;10	    asm("set %0.1":"=m"(_iar1));
+				;11	    asm("set %0.0":"=m"(_iar1));
+				;12	    while(_iar1&0x01) ;
+				;13	    _iar1 = 0;
+				;14	    _bp = 0;
+				;15	    WaterTmpIndex = _eed;
+				;16		i = WaterTmpIndex;
+				;17		if(WaterTmpIndex > 4)
+				;18			return 1;
+				;19	
+				;20	    _eea = 0x12;
+				;21	    _mp1 = 0x40;
+				;22	    _bp = 1;
+				;23	    asm("set %0.1":"=m"(_iar1));
+				;24	    asm("set %0.0":"=m"(_iar1));
+				;25	    while(_iar1&0x01) ;
+				;26	    _iar1 = 0;
+				;27	    _bp = 0;
+				;28	    WaterMlIndex = _eed;
+				;29	    i ^= WaterMlIndex;
+				;30		if(WaterMlIndex > 4)
+				;31			return 1;
+				;32		
+				;33	    _eea = 0x13;
+				;34	    _mp1 = 0x40;
+				;35	    _bp = 1;
+				;36	    asm("set %0.1":"=m"(_iar1));
+				;37	    asm("set %0.0":"=m"(_iar1));
+				;38	    while(_iar1 & 0x01) ;
+				;39	    _iar1 = 0;
+				;40	    _bp = 0;
+				;41	 	i ^= _eed;	
+				;42		if(_eed > 1)
+				;43			return 1;
+				;44	    if(_eed == 0)  
+				;45	    	LEDBGyuan = false;
+				;46	    else  
+				;47	    	LEDBGyuan = true;
+				;48	
+				;49	    _eea = 0x14;
+				;50	    _mp1 = 0x40;
+				;51	    _bp = 1;
+				;52	    asm("set %0.1":"=m"(_iar1));
+				;53	    asm("set %0.0":"=m"(_iar1));
+				;54	    while(_iar1 & 0x01) ;
+				;55	    _iar1 = 0;
+				;56	    _bp = 0;
+				;57	    if(_eed != i)  
+				;58	    	return 1;
+				;59	    else
+				;60	    	return 0;*/
+				;61		return 0;    	
+				;62	}
+				;63	
+				;64	void WriteEepRom(void)
+				;65	{
+				;66	/*	unsigned char i,m,n;
+				;67	
+				;68	    for(i=0;i<3;i++)
+				;69	    {
+				;70	        _eea = 0x11;			//				;71	        m = WaterTmpIndex;
+				;72	        _eed = m;
+				;73	        _mp1 = 0x40;
+				;74	        _bp = 1;
+				;75	        _emi = 0;
+				;76	        asm("set %0.3":"=m"(_iar1));
+				;77	        asm("set %0.2":"=m"(_iar1));
+				;78	        _emi = 1;
+				;79	        while(_iar1 & 0x04) ;
+				;80	        _iar1 = 0;
+				;81	        _bp = 0;
+				;82	
+				;83	        _eea = 0x12;		//				;84	        n = WaterMlIndex;
+				;85	        m ^= n;
+				;86	        _eed = n;
+				;87	        _mp1 = 0x40;
+				;88	        _bp = 1;
+				;89	        _emi = 0;
+				;90	        asm("set %0.3":"=m"(_iar1));
+				;91	        asm("set %0.2":"=m"(_iar1));
+				;92	        _emi = 1;
+				;93	        while(_iar1 & 0x04) ;
+				;94	        _iar1 = 0;
+				;95	        _bp = 0;
+				;96	    
+				;97	        _eea = 0x13;		//				;98	        n = (u8)LEDBGyuan;
+				;99	        m ^= n;
+				;100	        _eed = n;
+				;101	        _mp1 = 0x40;
+				;102	        _bp = 1;
+				;103	        _emi = 0;
+				;104	        asm("set %0.3":"=m"(_iar1));
+				;105	        asm("set %0.2":"=m"(_iar1));
+				;106	        _emi = 1;
+				;107	        while(_iar1 & 0x04) ;
+				;108	        _iar1 = 0;
+				;109	        _bp = 0;        
+				;110	    
+				;111	        _eea=0x14;			//				;112	        _eed=m;
+				;113	        _mp1=0x40;
+				;114	        _bp=1;
+				;115	        _emi=0;
+				;116	        asm("set %0.3":"=m"(_iar1));
+				;117	        asm("set %0.2":"=m"(_iar1));
+				;118	        _emi=1;
+				;119	        while(_iar1 & 0x04) ;
+				;120	        _iar1=0;
+				;121	        _bp=0;
+				;122	        */
+				;123	/*
+				;124	        _eea=0x11;
+				;125	        _mp1=0x40;
+				;126	        _bp=1;
+				;127	        asm("set %0.1":"=m"(_iar1));
+				;128	        asm("set %0.0":"=m"(_iar1));
+				;129	        while(_iar1 & 0x01) ;
+				;130	        _iar1 = 0;
+				;131	        _bp = 0;
+				;132	        k = _eed;
+				;133	        k <<= 8;
+				;134	    
+				;135	        _eea=0x12;
+				;136	        _mp1=0x40;
+				;137	        _bp=1;
+				;138	        asm("set %0.1":"=m"(_iar1));
+				;139	        asm("set %0.0":"=m"(_iar1));
+				;140	        while(_iar1&0x01) ;
+				;141	        _iar1=0;
+				;142	        _bp=0;
+				;143	        k+=_eed;
+				;144	        
+				;145	        _eea=0x13;
+				;146	        _mp1=0x40;
+				;147	        _bp=1;
+				;148	        asm("set %0.1":"=m"(_iar1));
+				;149	        asm("set %0.0":"=m"(_iar1));
+				;150	        while(_iar1&0x01) ;
+				;151	        _iar1=0;
+				;152	        _bp=0;
+				;153	        k+=_eed;            
+				;154	
+				;155	 //       if(cleanCnt == k) 
+				;156	 //       	break;
+				;157	//        cleanCnt=k;
+				;158	    }*/
+				;159	}
+				;160	
+				;161	void PowerDownFunc(void)
+				;162	{
+				_PowerDownFunc:
+				_PowerDownFunc:
+0002	0003	ret
+				;163	/*    if(NoZeroTime > 12)	//After 50 ms ,enter power down mode 
+				;164	    {
+				;165			if(!PowerDnFlag) 
+				;166			{
+				;167			    PowerDnFlag = true;
+				;168				WriteEepRom();
+				;169				//				;170			}
+				;171	    }
+				;172	    else
+				;173	    {
+				;174	     	if(PowerDnFlag)   
+				;175			{
+				;176	            if(NoZeroTime  < 5)	//				;177	            	NoZeroTime = false;  	
+				;178			}
+				;179	    }*/
+				;180	}
+				;file E:\				;1	#include "base.h"
+				;2	#define EXTERN extern
+				;3	#include "Var.h"
+				;4	
+				;5	
+				;6	/*********************************************************************************************************
+				;7	** 				;8	** 				;9	** 				;10	** 				;11	** 				;12	** 				;13	********************************************************************************************************/
+				;14	void __attribute((interrupt(0x10))) ISR_tmr2 (void)
+				;15	{
+				@dummy12 .SECTION 'CODE'
+				@ISR_tmr2_code .SECTION 'CODE'
+0010	40DC	mov     r110, a
+0011	070A	mov     a, STATUS
+0012	40DD	mov     r210, a
+0013	2AC4	jmp     _ISR_tmr2
+				;16	//	_pc0 = !_pc0;
+				;17	//	_pb4 = !_pb4;	
+				;18	    _mf1f = 0;
+				_ISR_tmr2:
+				_ISR_tmr2:
+02C4	360F	clr     MF1F
+				;19	    _t2pf = 0;
+02C5	3712	clr     T2PF
+				;20	    _t1pf = 0;
+02C6	3612	clr     T1PF
+				;21	    //if(mfPumpW==0)
+				;22	    if(1)
+				;23	    {
+				;24	        _t2cp = 0;
+02C7	3519	clr     T2CP
+				;25	        //_tm2al = 0;
+				;26	        //_tm2ah = 0;
+				;27	        _pb3 = 0;
+02C8	35A5	clr     PB3
+02C9	475D	mov     a, r210
+02CA	008A	mov     STATUS, a
+02CB	475C	mov     a, r110
+02CC	0004	reti
+				;28	    }
+				;29	    else
+				;30	    {
+				;31	//        _tm2al = (unsigned char)pumpPwm;
+				;32	//        _tm2ah = (unsigned char)(pumpPwm>>8);
+				;33	        _t2cp = 1;
+				;34	    }
+				;35	
+				;36	}
+				;37	
+				;38	/*********************************************************************************************************
+				;39	** 				;40	** 				;41	** 				;42	** 				;43	** 				;44	** 				;45	********************************************************************************************************/
+				;46	void __attribute((interrupt(0x0c))) ISR_tmr0 (void)
+				;47	{
+				L000C:
+				@ISR_tmr0_code .SECTION 'CODE'
+000C	40DE	mov     r10c, a
+000D	070A	mov     a, STATUS
+000E	40DF	mov     r20c, a
+000F	2ACD	jmp     _ISR_tmr0
+				;48		// off the pump pulse if triac is ON
+				;49		// on the pump pulse if triac is off before zero cross
+				;50		if(IO_HEATTR == 0)
+				_ISR_tmr0:
+				_ISR_tmr0:
+02CD	3E94	sz      PA5
+02CE	2AD1	jmp     _L3
+				;51		{											// off the pump if Triac is ON					
+				;52			_t0on = false;							// turn off timer 0 to change timer config
+02CF	35AF	clr     T0ON
+				;53			IO_HEATTR = true;
+02D0	3294	set     PA5
+				;54	
+				;55		}						// clr TM0 Comparator A match interrupt req flg.	
+				;56			_t0on = false;							// turn off timer 0 to change timer config
+				_L3:
+02D1	35AF	clr     T0ON
+				;57			IO_HEATTR = false;
+02D2	3694	clr     PA5
+02D3	475F	mov     a, r20c
+02D4	008A	mov     STATUS, a
+02D5	475E	mov     a, r10c
+02D6	0004	reti
+				;58		
+				;59	}
+				;60	/*********************************************************************************************************
+				;61	** 				;62	** 				;63	** 				;64	** 				;65	** 				;66	** 				;67	********************************************************************************************************/
+				;68	//static _BUZZER	Buzzer __attribute__ ((at(0x1f2)));
+				;69	
+				;70	void PowerOnTips(void)
+				;71	{
+				_PowerOnTips:
+				_PowerOnTips:
+0003	0003	ret
+				;72	}
+				;73	#define INIT_NO_DETECT_TIME	5
+				;74	unsigned char Time500Cnt = 0,Time1SCnt = 0,Time100Cnt = 0;
+				;75	void __attribute((interrupt(0x1c))) ISRTime0Base(void)
+				;76	{
+				@ISRTime0Base_code .SECTION 'CODE'
+001C	40E0	mov     r11c, a
+001D	070A	mov     a, STATUS
+001E	40E1	mov     r21c, a
+001F	2AD7	jmp     _ISRTime0Base
+				;77		static u8 TaskADCCnt = 0;
+				;78		
+				;79		NoZeroTime++;				//				_ISRTime0Base:
+				_ISRTime0Base:
+02D7	54A3	inc     NoZeroTime[0]
+				;80		TaskADCCnt++;
+02D8	5452	inca    TaskADCCnt[0]
+02D9	40E2	mov     ra1c, a
+02DE	4762	mov     a, ra1c
+02DF	40D2	mov     TaskADCCnt[0], a
+02E0	2AE3	jmp     _L8
+				;81		if(TaskADCCnt > 25)			//100ms02DA	0F19	mov     a, 19H
+02DB	4262	sub     a, ra1c
+02DC	380A	snz     C
+02DD	2AE1	jmp     _L7
+				;82		{
+				;83			TaskADCCnt = 0;
+				_L7:
+02E1	5F52	clr     TaskADCCnt[0]
+				;84			TaskADCRdyFlag = true;
+02E2	70BB	set     maiFlagB[0].1
+				;85		}
+				;86		if((Time100Cnt ++) >= 25)
+				_L8:
+02E3	474F	mov     a, Time100Cnt[0]
+02E4	40E2	mov     ra1c, a
+02E5	0F18	mov     a, 18H
+02E6	4262	sub     a, ra1c
+02E7	380A	snz     C
+02E8	2AEC	jmp     _L9
+02E9	5462	inca    ra1c
+02EA	40CF	mov     Time100Cnt[0], a
+02EB	2AF5	jmp     _L10
+				;87		{
+				;88			Time100Cnt = 0;
+				_L9:
+02EC	5F4F	clr     Time100Cnt[0]
+				;89			Flag100ms = !Flag100ms;
+02ED	473B	mov     a, maiFlagB[0]
+02EE	0C10	xor     a, 10H
+02EF	40E2	mov     ra1c, a
+02F0	0F10	mov     a, 10H
+02F1	46E2	andm    a, ra1c
+02F2	763B	clr     maiFlagB[0].4
+02F3	4762	mov     a, ra1c
+02F4	45BB	orm     a, maiFlagB[0]
+				;90		}
+				;91		
+				;92		if(Time500Cnt++ >= 122)		//500ms				_L10:
+02F5	4751	mov     a, Time500Cnt[0]
+02F6	40E2	mov     ra1c, a
+02F7	0F79	mov     a, 79H
+02F8	4262	sub     a, ra1c
+02F9	380A	snz     C
+02FA	2AFE	jmp     _L11
+02FB	5462	inca    ra1c
+02FC	40D1	mov     Time500Cnt[0], a
+02FD	2B00	jmp     _L12
+				;93		{
+				;94			Time500Cnt = 0;
+				_L11:
+02FE	5F51	clr     Time500Cnt[0]
+				;95			Flag500ms = true;
+02FF	71BC	set     maiFlagA[0].3
+				;96		//	LED_RED = !LED_RED;
+				;97		}
+				;98	
+				;99		if(Time1SCnt++ >= 240)		//1S				_L12:
+0300	4750	mov     a, Time1SCnt[0]
+0301	40E2	mov     ra1c, a
+0302	5462	inca    ra1c
+0303	40D0	mov     Time1SCnt[0], a
+0304	0FEF	mov     a, EFH
+0305	4262	sub     a, ra1c
+0306	3C0A	sz      C
+0307	2B1C	jmp     _L14
+				;100		{
+				;101			Time1SCnt = 0;
+0308	5F50	clr     Time1SCnt[0]
+				;102			Time1MinCnt++;
+0309	5433	inca    Time1MinCnt[0]
+030A	40E5	mov     _ISRTime0Base_2, a
+030B	4765	mov     a, _ISRTime0Base_2
+030C	40B3	mov     Time1MinCnt[0], a
+				;103			Flag1S = true;
+030D	703B	set     maiFlagB[0].0
+				;104			if(Time1MinCnt > INIT_NO_DETECT_TIME)
+030E	0F05	mov     a, 5H
+030F	4265	sub     a, _ISRTime0Base_2
+0310	3C0A	sz      C
+0311	2B19	jmp     _L16
+				;105			{
+				;106				FlagStartDetect = true;				
+0312	73BC	set     maiFlagA[0].7
+				;107			}
+				;108			if(Time1MinCnt >= 60)	//0313	0F3B	mov     a, 3BH
+0314	4265	sub     a, _ISRTime0Base_2
+0315	3C0A	sz      C
+0316	2B19	jmp     _L16
+				;109			{
+				;110				Time1MinCnt = 0;
+0317	5F33	clr     Time1MinCnt[0]
+				;111				Time60Min++;
+0318	54B6	inc     Time60Min[0]
+				;112			}
+				;113			if(ModeScntFlag)	//				_L16:
+0319	7A39	snz     LEDH[0].4
+031A	2B1C	jmp     _L14
+				;114			{
+				;115				ModeScnt++;
+031B	54A4	inc     ModeScnt[0]
+				;116			}
+				;117		}
+				;118		if(WorkMode != POWERON_MODE)
+				_L14:
+031C	50B1	sz      WorkMode[0]
+031D	2B1F	jmp     _LI1
+031E	2B20	jmp     _L6
+				;119			TaskKeyRdy = true;
+				_LI1:
+031F	72BA	set     LEDG[0].5
+				_L6:
+0320	4761	mov     a, r21c
+0321	008A	mov     STATUS, a
+0322	4760	mov     a, r11c
+0323	0004	reti
+				;120	}
+				;121	
+				;122	
+				;123	void __attribute((interrupt(0x20))) ISRTime1Base(void)
+				;124	{
+				_ISRTime1Base:
+				@ISRTime1Base_code .SECTION 'CODE'
+				@dummy28 .SECTION 'CODE'
+0020	0004	reti
+				;125	
+				;126	}
+				;127	
+				;128	/*********************************************************************************************************
+				;129	** 				;130	** 				;131	** 				;132	** 				;133	** 				;134	** 				;135	********************************************************************************************************/
+				;136	const u8 Table_1[]={1,2};		//60HZ	//				;137	
+				;138	void __attribute((interrupt(0x04))) ISR_int0 (void)
+				;139	{
+				@ISR_int0_code .SECTION 'CODE'
+0004	40E3	mov     r104, a
+0005	070A	mov     a, STATUS
+0006	40E4	mov     r204, a
+0007	2814	jmp     _ISR_int0
+				@dummy4 .SECTION 'CODE'
+0008	0000	nop
+0009	0000	nop
+000A	0000	nop
+000B	0000	nop
+				;140	    _int0f=0;
+				_ISR_int0:
+				_ISR_int0:
+				@dummy16 .SECTION 'CODE'
+0014	360E	clr     INT0F
+0015	4764	mov     a, r204
+0016	008A	mov     STATUS, a
+0017	4763	mov     a, r104
+0018	0004	reti
+0019	0000	nop
+001A	0000	nop
+001B	0000	nop
+				;141	/*	if(WaterOutFlag)			//				;142		{
+				;143			IO_HEATTR = true;		//				;144		}
+				;145		else						//				;146		{
+				;147			_t0on = false;							// turn off timer 0 to change timer config		
+				;148			IO_HEATTR = true;		//				;149		}*/
+				;150	}
+				;file E:\				;1	;;--------------------------------------------------------------;;
+				;2	;;    This file is part of the Holtek C Compiler V3 package     ;;
+				;3	;;    For the initialization of static linkage variables        ;;
+				;4	;;    Copyright (C) 2017 Holtek Semiconductor Inc.              ;;
+				;5	;;    Version: 1.07 (Above IDE3000 V7.94)                       ;;
+				;6	;;    Date:    2017/03/06                                        ;;
+				;7	;;--------------------------------------------------------------;;
+				;8	
+				;9	acc equ [05h]
+				;10	tblp equ [07h]
+				;11	tblh equ [08h]
+				;12	;;tbhp equ [09h] 
+				;13	r0 equ [00h]
+				;14	mp0 equ [01h]
+				;15	r1 equ [02h]
+				;16	mp1l equ [03h]
+				;17	mp1h equ [04h]
+				;18	z equ [0ah].2
+				;19	c equ [0ah].0
+				;20	
+				;21	ifndef tbhp
+				;22	tbhp equ [09h]
+				;23	endif
+				;24	 
+				;25	extern startup_value_1:near
+				;26	
+				;27	@start .section 'code'
+				;28	begin_startup_value:
+				;29	  mov a,low (offset startup_value_1) 
+				begin_startup_value:
+				@start .SECTION 'CODE'
+				_main_startup1:
+				@start .SECTION 'CODE'
+0021	0F5B	mov     a, 5BH
+				;30	  mov tblp,a
+0022	0087	mov     TBLP, a
+				;31	  mov a,high (offset startup_value_1) 
+0023	0F00	mov     a, 0H
+				;32	  mov tbhp,a
+0024	0089	mov     TBHP, a
+				;33	next_table:
+				;34	  ;CLR WDT
+				;35	  inc tblp
+				next_table:
+0025	1487	inc     TBLP
+				;36	  sz z
+0026	3D0A	sz      Z
+				;37	  inc tbhp
+0027	1489	inc     TBHP
+				;38	ifdef USE_TABRDC
+				;39	  tabrdc mp0
+				;40	else
+				;41	  tabrd mp0
+0028	1D01	tabrd   MP0
+				;42	endif
+				;43	  sz mp0
+0029	1081	sz      MP0
+				;44	  jmp read_data
+002A	282C	jmp     read_data
+				;45	  jmp startupend1
+002B	2841	jmp     startupend1
+				;46	read_data:
+				;47	  inc tblp
+				read_data:
+002C	1487	inc     TBLP
+				;48	  sz z
+002D	3D0A	sz      Z
+				;49	  inc tbhp
+002E	1489	inc     TBHP
+				;50	ifdef USE_TABRDC
+				;51	  tabrdc mp1l
+				;52	else
+				;53	  tabrd mp1l
+002F	1D03	tabrd   MP1
+				;54	endif
+				;55	  mov a,tblh
+0030	0708	mov     a, TBLH
+				;56	  mov mp1h,a
+0031	0084	mov     BP, a
+				;57	next_data:
+				;58	  inc tblp
+				next_data:
+0032	1487	inc     TBLP
+				;59	  sz z
+0033	3D0A	sz      Z
+				;60	  inc tbhp
+0034	1489	inc     TBHP
+				;61	ifdef USE_TABRDC
+				;62	  tabrdc acc
+				;63	else
+				;64	  tabrd acc
+0035	1D05	tabrd   ACC
+				;65	endif
+				;66	  mov r1,a
+0036	0082	mov     [02H], a
+				;67	  sdz mp0
+0037	1781	sdz     MP0
+				;68	  jmp $+2
+0038	283A	jmp     L003A
+				;69	  jmp next_table
+0039	2825	jmp     next_table
+				;70	  inc mp1l
+				L003A:
+003A	1483	inc     MP1
+				;71	  mov a,tblh
+003B	0708	mov     a, TBLH
+				;72	  mov r1,a
+003C	0082	mov     [02H], a
+				;73	  inc mp1l
+003D	1483	inc     MP1
+				;74	  sdz mp0
+003E	1781	sdz     MP0
+				;75	  jmp next_data
+003F	2832	jmp     next_data
+				;76	  jmp next_table
+0040	2825	jmp     next_table
+				;77	
+				;78	;end_startup_value:
+				;79	
+				;80	startupend1:
+				;81	ifndef Disable_Bit_Initial
+				;82		MOV A,high  bitdatasec1_start
+				startupend1:
+0041	0F00	mov     a, 0H
+				;83		MOV mp1h,a
+0042	0084	mov     BP, a
+				;84		MOV A,offset bitdatasec1_end
+0043	0FBD	mov     a, BDH
+				;85		mov mp1l,A
+0044	0083	mov     MP1, a
+				;86		dec mp1l
+0045	1583	dec     MP1
+				;87		clr z
+0046	350A	clr     Z
+				;88		sub a,offset bitdatasec1_start
+0047	0ABD	sub     a, BDH
+				;89		sz z
+0048	3D0A	sz      Z
+				;90		jmp startupend2
+0049	284E	jmp     startupend2
+				;91	L0005:
+				;92		set r1
+				L0005:
+004A	1F82	set     [02H]
+				;93		dec mp1l
+004B	1583	dec     MP1
+				;94		sdz  acc
+004C	1785	sdz     ACC
+				;95		jmp L0005
+004D	284A	jmp     L0005
+				;96	
+				;97	startupend2:
+				;98		MOV A,high  bitdatasec0_start
+				startupend2:
+004E	0F00	mov     a, 0H
+				;99		MOV mp1h,a
+004F	0084	mov     BP, a
+				;100		MOV A,offset bitdatasec0_end
+0050	0FBD	mov     a, BDH
+				;101		mov mp1l,A
+0051	0083	mov     MP1, a
+				;102		dec mp1l
+0052	1583	dec     MP1
+				;103		clr z
+0053	350A	clr     Z
+				;104		sub a,offset bitdatasec0_start
+0054	0ABD	sub     a, BDH
+				;105		sz  z
+0055	3D0A	sz      Z
+				;106		jmp startupend3
+0056	285B	jmp     startupend3
+				;107	L0006:
+				;108		clr r1
+				L0006:
+0057	1F02	clr     [02H]
+				;109		dec mp1l
+0058	1583	dec     MP1
+				;110		sdz  acc
+0059	1785	sdz     ACC
+				;111		jmp L0006
+005A	2857	jmp     L0006
+				;112	startupend3:
+				;113	endif		
+				;114	   
+				;115	@ROMDATA_BASE .SECTION com_l 'CODE'  
+				;116	startup_value:
+				;117	;;linker range the initial value table here
+				;118	
+				;119	@BITDATASEC1 .SECTION com_l 'DATA'  
+				;120	bitdatasec1_start:
+				;121	
+				;122	@BITDATASEC1 .SECTION com_e 'DATA'  
+				;123	bitdatasec1_end:
+				;124	
+				;125	@BITDATASEC .SECTION com_l 'DATA'  
+				;126	bitdatasec0_start:
+				;127	
+				;128	@BITDATASEC .SECTION com_e 'DATA'  
+				;129	bitdatasec0_end:
+				;file E:\				;1	#include "base.h"
+				;2	#define EXTERN extern
+				;3	#include "Var.h"
+				;4	
+				;5	typedef struct
+				;6	{
+				;7		u16 Min;
+				;8		u16 Max;
+				;9	}__TEMP;
+				;10	
+				;11	#define PVC_PTC			1		//0 PVC 1 PTC
+				;12	
+				;13	#define MIN_VALU		500		//				;14	
+				;15	#define BASE_40C		1391	//37
+				;16	#define MID_40C			1502
+				;17	#define HIGH_40C		1468	//41
+				;18	
+				;19	
+				;20	#define BASE_50C		1584	//47
+				;21	#define MID_50C			1642
+				;22	#define HIGH_50C		1661	//51
+				;23	
+				;24	#define BASE_60C		1793	//58
+				;25	#define MID_60C			1830
+				;26	#define HIGH_60C		1923	//65
+				;27	
+				;28	#define SHORT_VALU		30
+				;29	
+				;30	unsigned short k;
+				;31	
+				;32	 __TEMP TempArray[3] = 
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+005E	056F	or      a, __pcpu[45]
+005F	05BC	orm     a, TM1RPL
+0060	0630	and     a, TM0C1
+0061	067D	and     a, __pcpu[59]
+0062	0701	mov     a, MP0
+0063	0783	dc	00783H
+0064	0005	clr     wdt2
+0065	00CD	mov     __pcpu[11], a
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+0066	0000	nop
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+				@ROMDATA_BASE .SECTION 'CODE'
+0067	0000	nop
+0068	0000	nop
+0069	0000	nop
+				;33	{
+				;34		{BASE_40C,HIGH_40C},
+				;35		{BASE_50C,HIGH_50C},
+				;36		{BASE_60C,HIGH_60C}
+				;37	};
+				;38	
+				;39	void GetAdcDat(void)
+				;40	{
+				;41		static u16 ShortCnt = 0;
+				;42		unsigned char i;
+				;43		unsigned short min,max;
+				;44		volatile static unsigned short adcBuf[10] __attribute__ ((at(0x1c0)));
+				;45	
+				;46	    if(_eocb)  
+				_GetAdcDat:
+				_GetAdcDat:
+				@dummy .SECTION 'CODE'
+007B	3F22	sz      EOCB
+007C	29A3	jmp     _L1
+				;47	    	return;
+				;48	
+				;49	    k = _adrh;
+				;50	    k <<= 8;
+007D	0721	mov     a, ADRH
+007E	40D6	mov     rc, a
+007F	5F55	clr     rb
+				;51	    k += _adrl;
+0080	0720	mov     a, ADRL
+0081	43D5	addm    a, rb
+0082	3C0A	sz      C
+0083	54D6	inc     rc
+0084	4755	mov     a, rb
+0085	40CB	mov     k[0], a
+0086	4756	mov     a, rc
+0087	40CC	mov     k[1], a
+				;52	    if(adcsp < 10) 
+0088	4735	mov     a, adcsp[0]
+0089	40E6	mov     _GetSwitch_2, a
+008A	0F09	mov     a, 9H
+008B	4266	sub     a, _GetSwitch_2
+008C	3C0A	sz      C
+008D	2892	jmp     _L15
+				;53	    	i = adcsp;
+				;54	    else  
+				;55	    	i = adcsp-10;
+008E	4766	mov     a, _GetSwitch_2
+008F	0BF6	add     a, F6H
+0090	40D7	mov     rd, a
+0091	2894	jmp     _L4
+				_L15:
+0092	4766	mov     a, _GetSwitch_2
+0093	40D7	mov     rd, a
+				;56	    adcBuf[i] = k;
+				_L4:
+0094	5F58	clr     re
+0095	340A	clr     C
+0096	5AD7	rlc     rd
+0097	5AD8	rlc     re
+0098	0FC0	mov     a, C0H
+0099	4357	add     a, rd
+009A	0083	mov     MP1, a
+009B	0F01	mov     a, 1H
+009C	5358	adc     a, re
+009D	0081	mov     MP0, a
+009E	0701	mov     a, MP0
+009F	0084	mov     BP, a
+00A0	4755	mov     a, rb
+00A1	0082	mov     [02H], a
+00A2	1483	inc     MP1
+00A3	4756	mov     a, rc
+00A4	0082	mov     [02H], a
+				;57	    if(adcsp < 11) 	//00A5	0F0A	mov     a, AH
+00A6	4266	sub     a, _GetSwitch_2
+00A7	380A	snz     C
+00A8	28AC	jmp     _L5
+				;58	    {
+				;59	    	adcsp++; 
+00A9	5466	inca    _GetSwitch_2
+00AA	40B5	mov     adcsp[0], a
+				;60	    	return;
+00AB	29A3	jmp     _L1
+				;61	    }
+				;62	    adcsp = 0;
+				_L5:
+00AC	5F35	clr     adcsp[0]
+				;63	    k = adcBuf[0];
+00AD	0FC0	mov     a, C0H
+00AE	0083	mov     MP1, a
+00AF	0F01	mov     a, 1H
+00B0	0081	mov     MP0, a
+00B1	0701	mov     a, MP0
+00B2	0084	mov     BP, a
+00B3	0702	mov     a, [02H]
+00B4	40D9	mov     rf, a
+00B5	1483	inc     MP1
+00B6	0702	mov     a, [02H]
+00B7	40DA	mov     rg, a
+00B8	4759	mov     a, rf
+00B9	40EA	mov     _GetSwitch_2[4], a
+00BA	475A	mov     a, rg
+00BB	40EB	mov     _GetSwitch_2[5], a
+00C0	0F09	mov     a, 9H
+00C1	40DB	mov     rh, a
+				;64	    min = k;
+				;65	    max = k;
+00BC	4759	mov     a, rf
+00BD	40E6	mov     _GetSwitch_2, a
+00BE	475A	mov     a, rg
+00BF	40E7	mov     _GetSwitch_2[1], a
+				;66	    for(i=1;i<10;i++)
+00C2	0F01	mov     a, 1H
+00C3	40D4	mov     ra, a
+0116	54D4	inc     ra
+0117	57DB	sdz     rh
+0118	291A	jmp     _LI1
+0119	291F	jmp     _L8
+				;67	    {
+				;68	        if(min > adcBuf[i])  
+				_L9:
+00C4	4754	mov     a, ra
+00C5	40D5	mov     rb, a
+00C6	5F56	clr     rc
+00C7	340A	clr     C
+00C8	5A55	rlca    rb
+00C9	40D7	mov     rd, a
+00CA	5A56	rlca    rc
+00CB	40D8	mov     re, a
+00CC	0FC0	mov     a, C0H
+00CD	43D7	addm    a, rd
+00CE	0F01	mov     a, 1H
+00CF	53D8	adcm    a, re
+00D0	4757	mov     a, rd
+00D1	0083	mov     MP1, a
+00D2	4758	mov     a, re
+00D3	0081	mov     MP0, a
+00D4	239D	call    L039D
+00D5	40E8	mov     _GetSwitch_2[2], a
+00D6	239C	call    L039C
+00D7	40E9	mov     _GetSwitch_2[3], a
+00D8	4768	mov     a, _GetSwitch_2[2]
+00D9	4259	sub     a, rf
+00DA	4769	mov     a, _GetSwitch_2[3]
+00DB	525A	sbc     a, rg
+00DC	3C0A	sz      C
+00DD	28E6	jmp     _L6
+				;69	        	min=adcBuf[i];
+00DE	4757	mov     a, rd
+00DF	0083	mov     MP1, a
+00E0	4758	mov     a, re
+00E1	0081	mov     MP0, a
+00E2	239D	call    L039D
+00E3	40D9	mov     rf, a
+00E4	239C	call    L039C
+00E5	40DA	mov     rg, a
+				;70	        if(max < adcBuf[i])  
+				_L6:
+00E6	340A	clr     C
+00E7	5A55	rlca    rb
+00E8	40D7	mov     rd, a
+00E9	5A56	rlca    rc
+00EA	40D8	mov     re, a
+00EB	0FC0	mov     a, C0H
+00EC	43D7	addm    a, rd
+00ED	0F01	mov     a, 1H
+00EE	53D8	adcm    a, re
+00EF	4757	mov     a, rd
+00F0	0083	mov     MP1, a
+00F1	4758	mov     a, re
+00F2	0081	mov     MP0, a
+00F3	239D	call    L039D
+00F4	40E8	mov     _GetSwitch_2[2], a
+00F5	239C	call    L039C
+00F6	40E9	mov     _GetSwitch_2[3], a
+00F7	4766	mov     a, _GetSwitch_2
+00F8	4268	sub     a, _GetSwitch_2[2]
+00F9	4767	mov     a, _GetSwitch_2[1]
+00FA	5269	sbc     a, _GetSwitch_2[3]
+00FB	3C0A	sz      C
+00FC	2905	jmp     _L7
+				;71	        	max=adcBuf[i];
+00FD	4757	mov     a, rd
+00FE	0083	mov     MP1, a
+00FF	4758	mov     a, re
+0100	0081	mov     MP0, a
+0101	239D	call    L039D
+0102	40E6	mov     _GetSwitch_2, a
+0103	239C	call    L039C
+0104	40E7	mov     _GetSwitch_2[1], a
+				;72	        k += adcBuf[i]; 
+				_L7:
+0105	340A	clr     C
+0106	5AD5	rlc     rb
+0107	5AD6	rlc     rc
+0108	0FC0	mov     a, C0H
+0109	4355	add     a, rb
+010A	0083	mov     MP1, a
+010B	0F01	mov     a, 1H
+010C	5356	adc     a, rc
+010D	0081	mov     MP0, a
+010E	239D	call    L039D
+010F	40D5	mov     rb, a
+0110	239C	call    L039C
+0111	40D6	mov     rc, a
+0112	476A	mov     a, _GetSwitch_2[4]
+0113	43D5	addm    a, rb
+0114	476B	mov     a, _GetSwitch_2[5]
+0115	53D6	adcm    a, rc
+				_LI1:
+011A	4755	mov     a, rb
+011B	40EA	mov     _GetSwitch_2[4], a
+011C	4756	mov     a, rc
+011D	40EB	mov     _GetSwitch_2[5], a
+011E	28C4	jmp     _L9
+				;73	    }
+				;74	    k -= min; k -= max; k >>= 3;			//				_L8:
+011F	4755	mov     a, rb
+0120	4259	sub     a, rf
+0121	40D5	mov     rb, a
+0122	4756	mov     a, rc
+0123	525A	sbc     a, rg
+0124	40D6	mov     rc, a
+0125	4755	mov     a, rb
+0126	4266	sub     a, _GetSwitch_2
+0127	40D5	mov     rb, a
+0128	4756	mov     a, rc
+0129	5267	sbc     a, _GetSwitch_2[1]
+012A	40D6	mov     rc, a
+012B	0F03	mov     a, 3H
+				_LI2:
+012C	340A	clr     C
+012D	5BD6	rrc     rc
+012E	5BD5	rrc     rb
+012F	1785	sdz     ACC
+0130	292C	jmp     _LI2
+0131	4755	mov     a, rb
+0132	40CB	mov     k[0], a
+0133	4756	mov     a, rc
+0134	40CC	mov     k[1], a
+				;75	
+				;76	    adcsele++;
+0135	5434	inca    adcsele[0]
+0136	40D4	mov     ra, a
+0137	4754	mov     a, ra
+0138	40B4	mov     adcsele[0], a
+				;77	    if(adcsele & 0x01)     					//ADC_HOT
+0139	7854	snz     ra.0
+013A	297D	jmp     _L10
+				;78	    {
+				;79	        _adcr0 = ADC_PTC1;					//013B	0F10	mov     a, 10H
+013C	00A2	mov     ADCR0, a
+				;80	        STAR_ADC();
+013D	37A2	clr     START
+013E	33A2	set     START
+013F	37A2	clr     START
+				;81	        if(k > TempArray[HeartMode].Max)	//0140	4730	mov     a, HeartMode[0]
+0141	40D7	mov     rd, a
+0142	5F58	clr     re
+0143	340A	clr     C
+0144	5A57	rlca    rd
+0145	40D9	mov     rf, a
+0146	5A58	rlca    re
+0147	40DA	mov     rg, a
+0148	340A	clr     C
+0149	5AD9	rlc     rf
+014A	5ADA	rlc     rg
+014B	0FBF	mov     a, BFH
+014C	4359	add     a, rf
+014D	0083	mov     MP1, a
+014E	0F00	mov     a, 0H
+014F	535A	adc     a, rg
+0150	0081	mov     MP0, a
+0151	239D	call    L039D
+0152	40D9	mov     rf, a
+0153	239C	call    L039C
+0154	40DA	mov     rg, a
+0155	4759	mov     a, rf
+0156	4255	sub     a, rb
+0157	475A	mov     a, rg
+0158	5256	sbc     a, rc
+0159	3C0A	sz      C
+015A	295C	jmp     _L11
+				;82	        {
+				;83	        	EnThyOutFlag = false;
+015B	763C	clr     maiFlagA[0].4
+				;84	        }
+				;85	        if(k < TempArray[HeartMode].Min)	//				_L11:
+015C	340A	clr     C
+015D	5AD7	rlc     rd
+015E	5AD8	rlc     re
+015F	340A	clr     C
+0160	5AD7	rlc     rd
+0161	5AD8	rlc     re
+0162	0FBD	mov     a, BDH
+0163	4357	add     a, rd
+0164	0083	mov     MP1, a
+0165	0F00	mov     a, 0H
+0166	5358	adc     a, re
+0167	0081	mov     MP0, a
+0168	239D	call    L039D
+0169	40D7	mov     rd, a
+016A	239C	call    L039C
+016B	40D8	mov     re, a
+016C	4755	mov     a, rb
+016D	4257	sub     a, rd
+016E	4756	mov     a, rc
+016F	5258	sbc     a, re
+0170	3C0A	sz      C
+0171	2973	jmp     _L12
+				;86	        {
+				;87	        	EnThyOutFlag = true;	
+0172	723C	set     maiFlagA[0].4
+				;88	        }
+				;89			if((k < MIN_VALU)&&(FlagStartDetect == true))	//				_L12:
+0173	0FF3	mov     a, F3H
+0174	4255	sub     a, rb
+0175	0F01	mov     a, 1H
+0176	5256	sbc     a, rc
+0177	380A	snz     C
+0178	29A3	jmp     _L1
+0179	7BBC	snz     maiFlagA[0].7
+017A	29A3	jmp     _L1
+				;90			{
+				;91				ShortFlag = true;
+017B	70BC	set     maiFlagA[0].1
+017C	29A3	jmp     _L1
+				;92			}
+				;93			
+				;94	    }
+				;95	    else //ADC_WATER
+				;96	    {
+				;97	        _adcr0=ADC_CURRENT;				//				_L10:
+017D	0F11	mov     a, 11H
+017E	00A2	mov     ADCR0, a
+				;98	        STAR_ADC();
+017F	37A2	clr     START
+0180	33A2	set     START
+0181	37A2	clr     START
+				;99	        if((HeaterFlag)&&(FlagStartDetect))					//0182	473C	mov     a, maiFlagA[0]
+0183	0EA0	and     a, A0H
+0184	40D4	mov     ra, a
+0185	4754	mov     a, ra
+0186	0AA0	sub     a, A0H
+0187	390A	snz     Z
+0188	29A3	jmp     _L1
+				;100	        {
+				;101		        if(k > SHORT_VALU)			//0189	0F1E	mov     a, 1EH
+018A	4255	sub     a, rb
+018B	0F00	mov     a, 0H
+018C	5256	sbc     a, rc
+018D	3C0A	sz      C
+018E	2992	jmp     _L14
+				;102		        {
+				;103		        	ShortCnt = 0;
+018F	5F49	clr     ShortCnt[0]
+0190	5F4A	clr     ShortCnt[1]
+0191	29A2	jmp     _L19
+				;104		        	NoLoadFlag = false;	
+				;105		        }
+				;106		        else
+				;107		        {
+				;108		        	ShortCnt++;
+				_L14:
+0192	0F01	mov     a, 1H
+0193	4349	add     a, ShortCnt[0]
+0194	40D5	mov     rb, a
+0195	0F00	mov     a, 0H
+0196	534A	adc     a, ShortCnt[1]
+0197	40D6	mov     rc, a
+0198	4755	mov     a, rb
+0199	40C9	mov     ShortCnt[0], a
+019A	4756	mov     a, rc
+019B	40CA	mov     ShortCnt[1], a
+				;109		        	if(ShortCnt >= 2000)		//019C	0FCF	mov     a, CFH
+019D	4255	sub     a, rb
+019E	0F07	mov     a, 7H
+019F	5256	sbc     a, rc
+01A0	3C0A	sz      C
+01A1	29A3	jmp     _L1
+				;110		        	{
+				;111		        		//NoLoadFlag = true;
+				;112		        		NoLoadFlag = false;
+				_L19:
+01A2	753C	clr     maiFlagA[0].2
+				_L1:
+01A3	0003	ret
+				;113		        	}
+				;114		        }
+				;115	        }
+				;116	    }
+				;117	}
+				;118	
+				;file E:\				;1	
+				;2	#include "base.h"
+				;3	#define EXTERN extern
+				;4	#include "Var.h"
+				;5	
+				;6	void Delay(void)
+				;7	{
+				;8		u8 i;
+				;9		for(i=20;i>0;i--);
+				;10	}
+				;11	#define HIGH_STA 1
+				;12	#define LOW_STA 2
+				;13	u8 IOZeroSta = 0,IOZeroStaBak = 0;
+				;14	
+				;15	void OutCtrl(void)
+				;16	{
+				;17		if(EnThyOutFlag)	//				_OutCtrl:
+				_OutCtrl:
+01A4	7A3C	snz     maiFlagA[0].4
+01A5	29C9	jmp     _L3
+				;18		{
+				;19			if(IO_ZERO)
+01A6	3840	snz     PC0
+01A7	29B4	jmp     _L4
+				;20			{
+				;21				Delay();
+				;22				if(IO_ZERO)
+01A8	3840	snz     PC0
+01A9	29BE	jmp     _L5
+				;23				{
+				;24					IOZeroSta = HIGH_STA;		//01AA	0F01	mov     a, 1H
+01AB	40CE	mov     IOZeroSta[0], a
+				;25					if(IOZeroSta != IOZeroStaBak)
+01AC	574D	sdza    IOZeroStaBak[0]
+01AD	29AF	jmp     _LI1
+01AE	29B2	jmp     _L6
+				;26					{
+				;27						IOZeroStaBak = IOZeroSta;
+				_LI1:
+01AF	0F01	mov     a, 1H
+01B0	40CD	mov     IOZeroStaBak[0], a
+				;28						ZeroHalfFlag = true;
+01B1	72B9	set     LEDH[0].5
+				;29					}				
+				;30					HeaterFlag = true;			//				_L6:
+01B2	72BC	set     maiFlagA[0].5
+01B3	29BE	jmp     _L5
+				;31				}
+				;32			}
+				;33			else
+				;34			{
+				;35				IOZeroSta = LOW_STA;
+				_L4:
+01B4	0F02	mov     a, 2H
+01B5	40CE	mov     IOZeroSta[0], a
+				;36				if(IOZeroSta != IOZeroStaBak)
+01B6	474D	mov     a, IOZeroStaBak[0]
+01B7	0A02	sub     a, 2H
+01B8	3D0A	sz      Z
+01B9	29BD	jmp     _L7
+				;37				{
+				;38					IOZeroStaBak = IOZeroSta;
+01BA	0F02	mov     a, 2H
+01BB	40CD	mov     IOZeroStaBak[0], a
+				;39					ZeroHalfFlag = true;
+01BC	72B9	set     LEDH[0].5
+				;40				}
+				;41				HeaterFlag = false;			
+				_L7:
+01BD	76BC	clr     maiFlagA[0].5
+				;42			}
+				;43			if(ZeroHalfFlag)						//				_L5:
+01BE	7AB9	snz     LEDH[0].5
+01BF	29CB	jmp     _L2
+				;44			{
+				;45				ZeroHalfFlag = false;
+01C0	76B9	clr     LEDH[0].5
+				;46				IO_HEATTR = true;
+01C1	3294	set     PA5
+				;47				_t0af = false;_t0ae = 1;			// enable TM0 Comparator A match interrupt control; clr TM0 Comparator A match interrupt req flg.
+01C2	3691	clr     T0AF
+01C3	3091	set     T0AE
+				;48				_tm0al = 0xfa;		               	// set TM0 CCRA=250; Timer interval = 250/125kHz=2ms
+01C4	0FFA	mov     a, FAH
+01C5	00B3	mov     TM0AL, a
+				;49				_tm0ah = 0x00; 	                    
+01C6	1F34	clr     TM0AH
+				;50				_t0on = true;						// turn on Timer0 and reset the timer count
+01C7	31AF	set     T0ON
+01C8	29CB	jmp     _L2
+				;51				
+				;52			}
+				;53		}
+				;54		else
+				;55		{
+				;56			IO_HEATTR = false;		
+				_L3:
+01C9	3694	clr     PA5
+				;57			HeaterFlag = false;			
+01CA	76BC	clr     maiFlagA[0].5
+				_L2:
+01CB	0003	ret
+				;58		}
+				;59	}
+				;60	
+				;61	#define EN_FLICK	0	//				;62	
+				;63	void Func(void)
+				;64	{
+				;65		if(ShortFlag)		//PTC				_Func:
+				_Func:
+01CC	473C	mov     a, maiFlagA[0]
+01CD	40E6	mov     _GetSwitch_2, a
+01CE	78E6	snz     _GetSwitch_2.1
+01CF	29D8	jmp     _L17
+				;66		{
+				;67			if(WorkMode != ALARM_MODE)
+01D0	4731	mov     a, WorkMode[0]
+01D1	0A03	sub     a, 3H
+01D2	3D0A	sz      Z
+01D3	29D8	jmp     _L17
+				;68			{
+				;69				WorkMode = ALARM_MODE;	//01D4	0F03	mov     a, 3H
+01D5	40B1	mov     WorkMode[0], a
+				;70				ErrType = ERR_SHORT;
+01D6	0F02	mov     a, 2H
+01D7	40AF	mov     ErrType[0], a
+				;71			}
+				;72		}
+				;73	
+				;74		if(NoLoadFlag)		//				_L17:
+01D8	7966	snz     _GetSwitch_2.2
+01D9	29E2	jmp     _L18
+				;75		{
+				;76			if(WorkMode != ALARM_MODE)
+01DA	4731	mov     a, WorkMode[0]
+01DB	0A03	sub     a, 3H
+01DC	3D0A	sz      Z
+01DD	29E2	jmp     _L18
+				;77			{
+				;78				WorkMode = ALARM_MODE;	//01DE	0F03	mov     a, 3H
+01DF	40B1	mov     WorkMode[0], a
+				;79				ErrType = ERR_NO_LOAD;
+01E0	0F03	mov     a, 3H
+01E1	40AF	mov     ErrType[0], a
+				;80			}
+				;81		}
+				;82	
+				;83	
+				;84	    switch(WorkMode)
+				_L18:
+01E2	4731	mov     a, WorkMode[0]
+01E3	0A00	sub     a, 0H
+01E4	3D0A	sz      Z
+01E5	29F2	jmp     _L20
+01E6	0A01	sub     a, 1H
+01E7	3D0A	sz      Z
+01E8	29FE	jmp     _L21
+01E9	4731	mov     a, WorkMode[0]
+01EA	0A02	sub     a, 2H
+01EB	3D0A	sz      Z
+01EC	2A0A	jmp     _L22
+01ED	4731	mov     a, WorkMode[0]
+01EE	0A03	sub     a, 3H
+01EF	390A	snz     Z
+01F0	2A66	jmp     _L16
+01F1	2A3F	jmp     _L50
+				;85	    {
+				;86		    case POWERON_MODE:
+				;87	    		LED_YEL_ON;
+				_L20:
+01F2	3494	clr     PA1
+				;88	    		LED_ORG_ON;
+01F3	3540	clr     PC2
+				;89	    		LED_RED_ON;
+01F4	34C0	clr     PC1
+				;90	    		if(Flag1S)						//01F5	783B	snz     maiFlagB[0].0
+01F6	29FC	jmp     _L24
+				;91	    		{
+				;92		    		WorkMode = RDY_MODE;		//01F7	0F01	mov     a, 1H
+01F8	40B1	mov     WorkMode[0], a
+				;93		    		LED_YEL_OFF;
+01F9	3094	set     PA1
+				;94		    		LED_ORG_OFF;
+01FA	3140	set     PC2
+				;95		    		LED_RED_OFF;    		
+01FB	30C0	set     PC1
+				;96	    		}
+				;97	    		HeaterFlag = false;
+				_L24:
+01FC	76BC	clr     maiFlagA[0].5
+				;98		        break;
+01FD	2A66	jmp     _L16
+				;99		    case RDY_MODE:
+				;100	    		LED_YEL_OFF;
+				_L21:
+01FE	3094	set     PA1
+				;101	    		LED_ORG_OFF;
+01FF	3140	set     PC2
+				;102	    		LED_RED_OFF;    		
+0200	30C0	set     PC1
+				;103		    	HeaterFlag = false;
+0201	76BC	clr     maiFlagA[0].5
+				;104		    	if(G_Input_Flag[KEY_MODE] == 1)		//0202	5732	sdza    G_Input_Flag[0]
+0203	2A66	jmp     _L16
+				;105		    	{
+				;106		    		G_Input_Flag[KEY_MODE] = 0;
+0204	5F32	clr     G_Input_Flag[0]
+				;107		    		HeartMode = LOW_40C;			//0205	5F30	clr     HeartMode[0]
+				;108		    		WorkMode = RUN_MODE;			//0206	0F02	mov     a, 2H
+0207	40B1	mov     WorkMode[0], a
+				;109		    		Time60Min = 0;					//0208	5F36	clr     Time60Min[0]
+0209	2A66	jmp     _L16
+				;110		    	}
+				;111		        break;
+				;112		    case RUN_MODE:    
+				;113		    	switch(HeartMode)					//				_L22:
+020A	4730	mov     a, HeartMode[0]
+020B	40E6	mov     _GetSwitch_2, a
+020C	4766	mov     a, _GetSwitch_2
+020D	0A00	sub     a, 0H
+020E	3D0A	sz      Z
+020F	2A1B	jmp     _L27
+0210	0A01	sub     a, 1H
+0211	3D0A	sz      Z
+0212	2A1E	jmp     _L28
+0213	4766	mov     a, _GetSwitch_2
+0214	0A02	sub     a, 2H
+0215	390A	snz     Z
+0216	2A21	jmp     _L26
+				;114		    	{
+				;115		    		case LOW_40C:
+				;116	#if EN_FLICK > 0	    		
+				;117		    			if((Flag100ms)||(EnThyOutFlag))
+				;118		    			{
+				;119			    			LED_YEL_ON;
+				;120		    			}
+				;121		    			else
+				;122		    			{
+				;123		    				LED_YEL_OFF;
+				;124		    			}
+				;125	#else
+				;126		    			LED_YEL_ON;
+				_L27:
+021B	3494	clr     PA1
+				;127	#endif	    			
+				;128			    		LED_ORG_OFF;
+021C	3140	set     PC2
+021D	2A20	jmp     _L48
+				;129			    		LED_RED_OFF;
+				;130		    			break;
+				;131		    		case LOW_50C:
+				;132			    		LED_YEL_OFF;
+				_L28:
+021E	3094	set     PA1
+				;133	#if EN_FLICK > 0	    				    		
+				;134		    			if((Flag100ms)||(EnThyOutFlag))
+				;135		    			{
+				;136			    			LED_ORG_ON;
+				;137		    			}
+				;138		    			else
+				;139		    			{
+				;140		    				LED_ORG_OFF;
+				;141		    			}
+				;142	#else
+				;143			    			LED_ORG_ON;
+021F	3540	clr     PC2
+				;144	#endif	    					    				    		
+				;145			    		LED_RED_OFF;
+				_L48:
+0220	30C0	set     PC1
+				;146		    			break;
+				;147		    		case LOW_60C:
+				;148			    		LED_YEL_OFF;
+0217	3094	set     PA1
+				;149			    		LED_ORG_OFF;
+0218	3140	set     PC2
+				;150	#if EN_FLICK > 0	    				    				    		
+				;151		    			if((Flag100ms)||(EnThyOutFlag))	//				;152		    			{
+				;153			    			LED_RED_ON;
+				;154		    			}
+				;155		    			else
+				;156		    			{
+				;157		    				LED_RED_OFF;
+				;158		    			}
+				;159	#else
+				;160			    		LED_RED_ON;					
+0219	34C0	clr     PC1
+				;161	#endif	    				
+				;162		    			break;
+021A	2A21	jmp     _L26
+				;163		    		default:
+				;164		    			break;
+				;165		    	}
+				;166		    	if(G_Input_Flag[KEY_MODE] == 1)			//				_L26:
+0221	5732	sdza    G_Input_Flag[0]
+0222	2A2F	jmp     _L30
+				;167		    	{
+				;168		    		G_Input_Flag[KEY_MODE] = 0;
+0223	5F32	clr     G_Input_Flag[0]
+				;169		    		HeartMode++;
+0224	5466	inca    _GetSwitch_2
+0225	40D4	mov     ra, a
+022A	4754	mov     a, ra
+022B	40B0	mov     HeartMode[0], a
+022C	2A2E	jmp     _L32
+				;170		    		if(HeartMode > LOW_60C)
+0226	0F02	mov     a, 2H
+0227	4254	sub     a, ra
+0228	380A	snz     C
+0229	2A2D	jmp     _L31
+				;171		    		{
+				;172		    			HeartMode = LOW_40C;
+				_L31:
+022D	5F30	clr     HeartMode[0]
+				;173		    		}
+				;174		    		Time60Min = 0;
+				_L32:
+022E	5F36	clr     Time60Min[0]
+				;175		    	}
+				;176		    	OutCtrl();								//				_L30:
+022F	21A4	call    _OutCtrl
+				;177		    	
+				;178		    	if(Time60Min >= WORK_TIME_MAX)			//0230	0F3B	mov     a, 3BH
+0231	4236	sub     a, Time60Min[0]
+0232	3C0A	sz      C
+0233	2A37	jmp     _L33
+				;179		    	{
+				;180		    		Time60Min = 0;
+0234	5F36	clr     Time60Min[0]
+				;181		    		WorkMode = RDY_MODE;				//0235	0F01	mov     a, 1H
+0236	40B1	mov     WorkMode[0], a
+				;182		    	}
+				;183		    	if(G_Input_Flag[KEY_MODE] == LONG_KEY)	//				_L33:
+0237	4732	mov     a, G_Input_Flag[0]
+0238	0A0A	sub     a, AH
+0239	390A	snz     Z
+023A	2A66	jmp     _L16
+				;184		    	{
+				;185		    		G_Input_Flag[KEY_MODE] = 0;
+023B	5F32	clr     G_Input_Flag[0]
+				;186		    		WorkMode = RDY_MODE;				//023C	0F01	mov     a, 1H
+023D	40B1	mov     WorkMode[0], a
+023E	2A66	jmp     _L16
+				;187		    	}
+				;188		    	
+				;189		        break;
+				;190			case ALARM_MODE:
+				;191				IO_HEATTR = false;						//				_L50:
+023F	3694	clr     PA5
+				;192				if(Flag500ms)
+0240	79E6	snz     _GetSwitch_2.3
+0241	2A66	jmp     _L16
+				;193				{
+				;194					Flag500ms = false;					//0242	75BC	clr     maiFlagA[0].3
+				;195					if(ErrType == ERR_SHORT)
+0243	472F	mov     a, ErrType[0]
+0244	40E6	mov     _GetSwitch_2, a
+0245	4766	mov     a, _GetSwitch_2
+0246	0A02	sub     a, 2H
+0247	390A	snz     Z
+0248	2A54	jmp     _L35
+				;196					{
+				;197						LED_RED_REVERSE;
+0249	1940	rra     PC
+024A	0E7F	and     a, 7FH
+024B	40D4	mov     ra, a
+024C	0F01	mov     a, 1H
+024D	44D4	xorm    a, ra
+024E	0F01	mov     a, 1H
+024F	46D4	andm    a, ra
+0250	4754	mov     a, ra
+0251	43D4	addm    a, ra
+0252	34C0	clr     PC1
+0253	2A64	jmp     _L49
+				;198					}
+				;199					if(ErrType == ERR_NO_LOAD)
+				_L35:
+0254	4766	mov     a, _GetSwitch_2
+0255	0A03	sub     a, 3H
+0256	390A	snz     Z
+0257	2A66	jmp     _L16
+				;200					{
+				;201						LED_ORG_REVERSE;
+0258	1940	rra     PC
+0259	1985	rr      ACC
+025A	0E3F	and     a, 3FH
+025B	40D5	mov     rb, a
+025C	0F01	mov     a, 1H
+025D	44D5	xorm    a, rb
+025E	0F01	mov     a, 1H
+025F	46D5	andm    a, rb
+0260	5F54	clr     ra
+0261	50D5	sz      rb
+0262	7154	set     ra.2
+0263	3540	clr     PC2
+				_L49:
+0264	4754	mov     a, ra
+0265	05C0	orm     a, PC
+				_L16:
+0266	0003	ret
+				;202					}
+				;203				}
+				;204		}
+				;205	}
+				;206	
+				;file E:\				;1	#include "base.h"
+				;2	#define EXTERN extern
+				;3	#include "Var.h"
+				;4	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				;5	void InitSys(void)
+				;6	{
+				;7	//	unsigned char i;
+				;8		// System clock setting
+				;9		_smod = 0b11100001;					// fsys=fH=8MHz; IDLE mode Disable
+				_InitSys:
+				_InitSys:
+0267	0FE1	mov     a, E1H
+0268	008B	mov     SMOD, a
+				;10			// Watchdog Timer Setting  
+				;11		_wdtc = 0b01010101;					// set WDT Timeout period= 2^16/fsub=2^16/32.768kHz=2sec; Enable WDT
+0269	0F55	mov     a, 55H
+026A	009A	mov     WDTC, a
+				;12	
+				;13	    _lvrc = 0b00110011; //2.55V
+026B	0F33	mov     a, 33H
+026C	009D	mov     LVRC, a
+				;14	    _cpc = 0x08;
+026D	0F08	mov     a, 8H
+026E	00BE	mov     CPC, a
+				;15	//io
+				;16	    _pa = 0x00;
+026F	1F14	clr     PA
+				;17	    _pac = 0x19;
+0270	0F19	mov     a, 19H
+0271	0095	mov     PAC, a
+				;18	    _papu = 0xFE; 
+0272	0FFE	mov     a, FEH
+0273	0096	mov     PAPU, a
+				;19	    
+				;20	    _pb = 0x10;
+0274	0F10	mov     a, 10H
+0275	00A5	mov     PB, a
+				;21	    _pbc  = 0b00000111;
+0276	0F07	mov     a, 7H
+0277	00A6	mov     PBC, a
+				;22	    _pbpu = 0b11111000;
+0278	0FF8	mov     a, F8H
+0279	00A7	mov     PBPU, a
+				;23	
+				;24	    _pc    = 0x07;
+027A	0F07	mov     a, 7H
+027B	00C0	mov     PC, a
+				;25	    _pcc   = 0x01;
+027C	0F01	mov     a, 1H
+027D	00C1	mov     PCC, a
+				;26	    _pcpu  = 0x07;
+027E	0F07	mov     a, 7H
+027F	00C2	mov     PCPU, a
+				;27		IO_HEATTR = false;						//0280	3694	clr     PA5
+				;28	  
+				;29	#if 1
+				;30	/*    for(i=0;i<100;i++)
+				;31	    {
+				;32	        keyBuf =_pa & 0x0f;
+				;33	        if(_pc2)  
+				;34	        	keyBuf |= 0x10;
+				;35	        keyBuf&=0x1f;
+				;36	        if(keyBuf == (KEY6OZ&KEY10OZ))  
+				;37	        	break;
+				;38	    }
+				;39	    if(i<99) 
+				;40	    	mfSelfCheck=1;
+				;41	    else  
+				;42	    	mfSelfCheck=0;
+				;43	*/
+				;44	#endif
+				;45	//adc init
+				;46	    _acerl = 0b00000011;
+0281	0F03	mov     a, 3H
+0282	00A4	mov     ACERL, a
+				;47	    _adcr0 = ADC_PTC1;
+0283	0F10	mov     a, 10H
+0284	00A2	mov     ADCR0, a
+				;48	    _adcr1 = 0x06;
+0285	0F06	mov     a, 6H
+0286	00A3	mov     ADCR1, a
+				;49	    STAR_ADC();
+0287	37A2	clr     START
+0288	33A2	set     START
+0289	37A2	clr     START
+				;50	//time2 init
+				;51	    _t2cp = 1;
+028A	3119	set     T2CP
+				;52	    _tm2c0 = 0b00010000;
+028B	0F10	mov     a, 10H
+028C	00A8	mov     TM2C0, a
+				;53	    _tm2c1 = 0b10101000;
+028D	0FA8	mov     a, A8H
+028E	00A9	mov     TM2C1, a
+				;54	    _tm2al = 0;
+028F	1F2C	clr     TM2AL
+				;55	    _tm2ah = 0;
+0290	1F2D	clr     TM2AH
+				;56	    _tm2rp = 0b00100000;   //0~8192 682us tp2 pwm
+0291	0F20	mov     a, 20H
+0292	00AE	mov     TM2RP, a
+				;57	    _t2on=1;
+0293	31A8	set     T2ON
+				;58	    _mf1e=1;
+0294	300F	set     MF1E
+				;59	    _t2pe=1;
+0295	3112	set     T2PE
+				;60	//time1 init
+				;61	    _t1cp = 0;
+0296	3499	clr     T1CP
+				;62	    _tm1c0 = 0b00010000;
+0297	0F10	mov     a, 10H
+0298	00B6	mov     TM1C0, a
+				;63	    _tm1c1 = 0b10101000;
+0299	0FA8	mov     a, A8H
+029A	00B7	mov     TM1C1, a
+				;64	    _tm1al = 0;
+029B	1F3A	clr     TM1AL
+				;65	    _tm1ah = 0;
+029C	1F3B	clr     TM1AH
+				;66	    _tm1rpl = 0xff;
+029D	1FBC	set     TM1RPL
+				;67	    _tm1rph = 0x03;
+029E	0F03	mov     a, 3H
+029F	00BD	mov     TM1RPH, a
+				;68	    _t1on=1;
+02A0	31B6	set     T1ON
+				;69	    //_mf1e=0;
+				;70	    //_t1pe=1;
+				;71	#ifdef DEBUG_SWITCH
+				;72	//time0 init 208us  4800
+				;73	    _tm0al=0xc0;
+02A1	0FC0	mov     a, C0H
+02A2	00B3	mov     TM0AL, a
+				;74	    _tm0ah=0x09;
+02A3	0F09	mov     a, 9H
+02A4	00B4	mov     TM0AH, a
+				;75	#else
+				;76	//time0  500us
+				;77	    _tm0al=0x70;
+				;78	    _tm0ah=0x17;
+				;79	#endif
+				;80		// ***Timer0 Setting***
+				;81		_tm0c0=0b00110000;                  // TM0 counter clock=fH/64=8MHz/64=125kHz; TM0 counter Off
+02A5	0F30	mov     a, 30H
+02A6	00AF	mov     TM0C0, a
+				;82		_tm0c1=0b11000001;                  // TM0 in timer mode; 
+02A7	0FC1	mov     a, C1H
+02A8	00B0	mov     TM0C1, a
+				;83		
+				;84		_tm0al=0xfa;		                // set TM0 CCRA=250; Timer interval = 250/125kHz=2ms
+02A9	0FFA	mov     a, FAH
+02AA	00B3	mov     TM0AL, a
+				;85		_tm0ah=0x00; 	                    
+02AB	1F34	clr     TM0AH
+				;86		_mf0e=1;							// Enable multi-function 0 for Timer0 interrupt
+02AC	318E	set     MF0E
+				;87	//int
+				;88	// Ext Int 1 Setting
+				;89		_int0s0=1;_int0s1=0;				// Set rising edge interrupt for INT1
+02AD	300D	set     INT0S0
+02AE	348D	clr     INT0S1
+				;90	
+				;91	    //_integ=0x03;
+				;92	    _int0e = true;
+02AF	308E	set     INT0E
+				;93	    
+				;94		// ***Time Base0&1 Setting***
+				;95		_tbc=0b11110101;					// enable Time Base, fTB=fsys/4=2MHz, select TB0 Time-out period=8192/fTB=4.096ms; 
+02B0	0FF5	mov     a, F5H
+02B1	009B	mov     TBC, a
+				;96											// select TB1 Time-out period=32768/fTB=1sec; 
+				;97		_tb0e=1;							// enable Time Base0 interrupt control
+02B2	318F	set     TB0E
+				;98	    
+				;99	    _emi = 1;    
+02B3	300E	set     EMI
+02B4	0003	ret
+				;100	}
+				;101	
+				;102	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				;103	void InitRam(void)
+				;104	{
+				;105	    adcsp=0;
+				_InitRam:
+				_InitRam:
+02B5	5F35	clr     adcsp[0]
+				;106	    adcsele=0;
+02B6	5F34	clr     adcsele[0]
+				;107	
+				;108	    WorkMode = POWERON_MODE;	
+02B7	5F31	clr     WorkMode[0]
+				;109	    HeartMode = LOW_40C; 				//02B8	5F30	clr     HeartMode[0]
+				;110		G_Input_Flag[KEY_MODE] = 0;
+02B9	5F32	clr     G_Input_Flag[0]
+				;111		Flag500ms = false;
+02BA	75BC	clr     maiFlagA[0].3
+				;112		Flag1S = false;
+02BB	743B	clr     maiFlagB[0].0
+				;113		Time60Min = 0;
+02BC	5F36	clr     Time60Min[0]
+				;114		FlagStartDetect = false;
+02BD	77BC	clr     maiFlagA[0].7
+				;115		TaskKeyRdy = false;
+02BE	76BA	clr     LEDG[0].5
+				;116		ShortFlag = false;
+02BF	74BC	clr     maiFlagA[0].1
+				;117		NoLoadFlag = false;
+02C0	753C	clr     maiFlagA[0].2
+				;118		HeaterFlag = false;
+02C1	76BC	clr     maiFlagA[0].5
+				;119		Time1MinCnt = 0;
+02C2	5F33	clr     Time1MinCnt[0]
+02C3	0003	ret
+				;120	}
+				;file E:\				;1	#include "base.h"
+				;2	#define EXTERN extern
+				;3	#include "Var.h"
+				;4	
+				;5	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				;6	volatile static unsigned char old_in_status[4]  __attribute__ ((at(0x1ee)));
+				;7	volatile static unsigned char in_count[4]  __attribute__ ((at(0x1f2)));
+				;8	
+				;9	
+				;10	void GetKey(void)
+				;11	{
+				;12	    u8 i;
+				;13	    u8 new_status;
+				;14		static u8 LongTimeCnt __attribute__ ((at(0x1dc)));
+				;15	
+				;16	    for(i = 0; i < CONFIG_IN_NUM; i++)
+				;17	    {
+				;18	    	if(i == 0)
+				;19	        	new_status = KEY;
+				_GetKey:
+				_GetKey:
+0324	5F54	clr     ra
+0325	3D94	sz      PA3
+0326	54D4	inc     ra
+				;20	
+				;21	        if(old_in_status[i] != new_status)
+0327	0FEE	mov     a, EEH
+0328	0083	mov     MP1, a
+0329	0F01	mov     a, 1H
+032A	0081	mov     MP0, a
+032B	0701	mov     a, MP0
+032C	0084	mov     BP, a
+032D	0702	mov     a, [02H]
+032E	40D5	mov     rb, a
+0333	4755	mov     a, rb
+0334	4254	sub     a, ra
+0335	3D0A	sz      Z
+0336	2B42	jmp     _L2
+				;22	            in_count[i] ++;
+032F	0FF2	mov     a, F2H
+0330	0083	mov     MP1, a
+0331	0F01	mov     a, 1H
+0332	0081	mov     MP0, a
+0337	0701	mov     a, MP0
+0338	0084	mov     BP, a
+0339	0702	mov     a, [02H]
+033A	40E6	mov     _GetSwitch_2, a
+033B	5466	inca    _GetSwitch_2
+033C	40D5	mov     rb, a
+033D	0701	mov     a, MP0
+033E	0084	mov     BP, a
+033F	4755	mov     a, rb
+0340	0082	mov     [02H], a
+0341	2B46	jmp     _L3
+				;23	        else
+				;24	            in_count[i] = 0;
+				_L2:
+0342	0701	mov     a, MP0
+0343	0084	mov     BP, a
+0344	0F00	mov     a, 0H
+0345	0082	mov     [02H], a
+				;25	
+				;26	        if(in_count[i] > 20)
+				_L3:
+0346	0FF2	mov     a, F2H
+0347	0083	mov     MP1, a
+0348	0F01	mov     a, 1H
+0349	0081	mov     MP0, a
+034A	0701	mov     a, MP0
+034B	0084	mov     BP, a
+034C	0702	mov     a, [02H]
+034D	40D5	mov     rb, a
+034E	0F14	mov     a, 14H
+034F	4255	sub     a, rb
+0350	3C0A	sz      C
+0351	2B61	jmp     _L4
+				;27	        {
+				;28	            if(new_status == 0)
+0352	50D4	sz      ra
+0353	2B57	jmp     _L5
+				;29	            {
+				;30	                G_Input_Flag[i] = 1;
+0354	0F01	mov     a, 1H
+0355	40B2	mov     G_Input_Flag[0], a
+0356	2B59	jmp     _L6
+				;31	            }
+				;32	            else
+				;33	            {
+				;34	                G_Input_Flag[i] = 2;
+				_L5:
+0357	0F02	mov     a, 2H
+0358	40B2	mov     G_Input_Flag[0], a
+				;35	            }
+				;36	        	old_in_status[i] = new_status;
+				_L6:
+0359	0FEE	mov     a, EEH
+035A	0083	mov     MP1, a
+035B	0F01	mov     a, 1H
+035C	0081	mov     MP0, a
+035D	0701	mov     a, MP0
+035E	0084	mov     BP, a
+035F	4754	mov     a, ra
+0360	0082	mov     [02H], a
+				;37	        }        
+				;38	    }
+				;39	    if(old_in_status[KEY_MODE] == 0)
+				_L4:
+0361	0FEE	mov     a, EEH
+0362	0083	mov     MP1, a
+0363	0F01	mov     a, 1H
+0364	0081	mov     MP0, a
+0365	0701	mov     a, MP0
+0366	0084	mov     BP, a
+0367	0702	mov     a, [02H]
+0368	40D4	mov     ra, a
+036D	50D4	sz      ra
+036E	2B80	jmp     _L7
+				;40	    {
+				;41	    	LongTimeCnt++;
+0369	0FDC	mov     a, DCH
+036A	0083	mov     MP1, a
+036B	0F01	mov     a, 1H
+036C	0081	mov     MP0, a
+036F	0701	mov     a, MP0
+0370	0084	mov     BP, a
+0371	0702	mov     a, [02H]
+0372	40E6	mov     _GetSwitch_2, a
+0373	5466	inca    _GetSwitch_2
+0374	40D4	mov     ra, a
+0375	0701	mov     a, MP0
+0376	0084	mov     BP, a
+0377	4754	mov     a, ra
+0378	0082	mov     [02H], a
+				;42	    	if(LongTimeCnt >= 250)
+0379	0FF9	mov     a, F9H
+037A	4254	sub     a, ra
+037B	3C0A	sz      C
+037C	2B84	jmp     _L1
+				;43	    	{
+				;44	    		G_Input_Flag[KEY_MODE] = LONG_KEY;
+037D	0F0A	mov     a, AH
+037E	40B2	mov     G_Input_Flag[0], a
+037F	2B84	jmp     _L1
+				;45	    	}
+				;46	    }
+				;47	    else
+				;48	    {
+				;49	    	LongTimeCnt = 0;
+				_L7:
+0380	0701	mov     a, MP0
+0381	0084	mov     BP, a
+0382	0F00	mov     a, 0H
+0383	0082	mov     [02H], a
+				_L1:
+0384	0003	ret
+				;50	    }
+				;51	}
+				;52	
+				;53	
+				;54	void GetSwitch(void)
+				;55	{
+				;56		static unsigned char swCntA = 0;
+				;57		if(FlagStartDetect)	//				_GetSwitch:
+				_GetSwitch:
+0385	7BBC	snz     maiFlagA[0].7
+0386	2B9B	jmp     _L10
+0387	4753	mov     a, swCntA[0]
+0388	40E6	mov     _GetSwitch_2, a
+				;58		{
+				;59		    if(PROTECT)
+0389	3925	snz     PB2
+038A	2B94	jmp     _L12
+				;60		    {
+				;61		        if(swCntA < 200) 
+038B	0FC7	mov     a, C7H
+038C	4266	sub     a, _GetSwitch_2
+038D	380A	snz     C
+038E	2B92	jmp     _L13
+				;62		        	swCntA++;
+038F	5466	inca    _GetSwitch_2
+0390	40D3	mov     swCntA[0], a
+0391	2B9B	jmp     _L10
+				;63		        else 
+				;64		        	ShortFlag = true;
+				_L13:
+0392	70BC	set     maiFlagA[0].1
+0393	2B9B	jmp     _L10
+				;65		    }
+				;66		    else
+				;67		    {
+				;68		        if(swCntA>0) 
+				_L12:
+0394	50E6	sz      _GetSwitch_2
+0395	2B97	jmp     _LI1
+0396	2B9A	jmp     _L14
+				;69		        	swCntA--;
+				_LI1:
+0397	5566	deca    _GetSwitch_2
+0398	40D3	mov     swCntA[0], a
+0399	2B9B	jmp     _L10
+				;70		        else 
+				;71		        	ShortFlag = false;
+				_L14:
+039A	74BC	clr     maiFlagA[0].1
+				_L10:
+039B	0003	ret
+				L039C:
+039C	1483	inc     MP1
+				L039D:
+039D	3F81	sz      MP0.7
+039E	2BA3	jmp     L03A3
+039F	0701	mov     a, MP0
+03A0	0084	mov     BP, a
+03A1	0702	mov     a, [02H]
+03A2	0003	ret
+				L03A3:
+03A3	1B01	rrca    MP0
+03A4	0E3F	and     a, 3FH
+03A5	0089	mov     TBHP, a
+03A6	1B03	rrca    MP1
+03A7	0087	mov     TBLP, a
+03A8	1D05	tabrd   ACC
+03A9	3C0A	sz      C
+03AA	0708	mov     a, TBLH
+03AB	0003	ret
+				;72		    }
+				;73		}
+				;74	}
+				data .SECTION 'DATA'
+				__smod DB DUP (?) ; __smod
+				__integ DB DUP (?) ; __integ
+				__intc0 DB DUP (?) ; __intc0
+				__intc1 DB DUP (?) ; __intc1
+				__mfi0 DB DUP (?) ; __mfi0
+				__mfi1 DB DUP (?) ; __mfi1
+				__pa DB DUP (?) ; __pa
+				__pac DB DUP (?) ; __pac
+				__papu DB DUP (?) ; __papu
+				__tmpc DB DUP (?) ; __tmpc
+				__wdtc DB DUP (?) ; __wdtc
+				__tbc DB DUP (?) ; __tbc
+				__lvrc DB DUP (?) ; __lvrc
+				__adrl DB DUP (?) ; __adrl
+				__adrh DB DUP (?) ; __adrh
+				__adcr0 DB DUP (?) ; __adcr0
+				__adcr1 DB DUP (?) ; __adcr1
+				__acerl DB DUP (?) ; __acerl
+				__pb DB DUP (?) ; __pb
+				__pbc DB DUP (?) ; __pbc
+				__pbpu DB DUP (?) ; __pbpu
+				__tm2c0 DB DUP (?) ; __tm2c0
+				__tm2c1 DB DUP (?) ; __tm2c1
+				__tm2al DB DUP (?) ; __tm2al
+				__tm2ah DB DUP (?) ; __tm2ah
+				__tm2rp DB DUP (?) ; __tm2rp
+				__tm0c0 DB DUP (?) ; __tm0c0
+				__tm0c1 DB DUP (?) ; __tm0c1
+				__tm0al DB DUP (?) ; __tm0al
+				__tm0ah DB DUP (?) ; __tm0ah
+				__tm1c0 DB DUP (?) ; __tm1c0
+				__tm1c1 DB DUP (?) ; __tm1c1
+				__tm1al DB DUP (?) ; __tm1al
+				__tm1ah DB DUP (?) ; __tm1ah
+				__tm1rpl DB DUP (?) ; __tm1rpl
+				__tm1rph DB DUP (?) ; __tm1rph
+				__cpc DB DUP (?) ; __cpc
+				__pc DB DUP (?) ; __pc
+				__pcc DB DUP (?) ; __pcc
+				__pcpu DB DUP (?) ; __pcpu
+				txBit DB DUP (?) ; txBit
+				txSp DB DUP (?) ; txSp
+				txBuf DB DUP (?) ; txBuf
+				NoZeroTime DB DUP (?) ; NoZeroTime
+				ModeScnt DB DUP (?) ; ModeScnt
+				adjStep DB DUP (?) ; adjStep
+				runErroCnt DB DUP (?) ; runErroCnt
+				ntcErroH DB DUP (?) ; ntcErroH
+				ntcErroL DB DUP (?) ; ntcErroL
+				delayWate DB DUP (?) ; delayWate
+				clrTime DB 2 DUP (?) ; clrTime
+				hotTmp DB DUP (?) ; hotTmp
+				hotDelay DB DUP (?) ; hotDelay
+				adjDiv DB DUP (?) ; adjDiv
+				ErrType DB DUP (?) ; ErrType
+				HeartMode DB DUP (?) ; HeartMode
+				WorkMode DB DUP (?) ; WorkMode
+				G_Input_Flag DB DUP (?) ; G_Input_Flag
+				Time1MinCnt DB DUP (?) ; Time1MinCnt
+				adcsele DB DUP (?) ; adcsele
+				adcsp DB DUP (?) ; adcsp
+				Time60Min DB DUP (?) ; Time60Min
+				sysTime DB 2 DUP (?) ; sysTime
+				LEDH DB DUP (?) ; LEDH
+				LEDG DB DUP (?) ; LEDG
+				maiFlagB DB DUP (?) ; maiFlagB
+				maiFlagA DB DUP (?) ; maiFlagA
+				TempArray DB DUP (?) ; TempArray
+				ShortCnt DB 2 DUP (?) ; ShortCnt
+				k DB 2 DUP (?) ; k
+				IOZeroStaBak DB DUP (?) ; IOZeroStaBak
+				IOZeroSta DB DUP (?) ; IOZeroSta
+				Time100Cnt DB DUP (?) ; Time100Cnt
+				Time1SCnt DB DUP (?) ; Time1SCnt
+				Time500Cnt DB DUP (?) ; Time500Cnt
+				TaskADCCnt DB DUP (?) ; TaskADCCnt
+				swCntA DB DUP (?) ; swCntA
+				ra DB DUP (?)
+				rb DB DUP (?)
+				rc DB DUP (?)
+				rd DB DUP (?)
+				re DB DUP (?)
+				rf DB DUP (?)
+				rg DB DUP (?)
+				rh DB DUP (?)
+				r110 DB DUP (?)
+				r210 DB DUP (?)
+				r10c DB DUP (?)
+				r20c DB DUP (?)
+				r11c DB DUP (?)
+				r21c DB DUP (?)
+				ra1c DB DUP (?)
+				r104 DB DUP (?)
+				r204 DB DUP (?)
+				_ISRTime0Base_2 DB DUP (?)
+				_GetSwitch_2 DB DUP (?)
+				adcBuf DB DUP (?) ; adcBuf
+				LongTimeCnt DB DUP (?) ; LongTimeCnt
+				old_in_status DB DUP (?) ; old_in_status
+				in_count DB DUP (?) ; in_count

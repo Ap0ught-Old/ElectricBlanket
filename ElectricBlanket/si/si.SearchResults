@@ -1,0 +1,14 @@
+---- __attribute__ Matches (13 in 5 files) ----
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	volatile static unsigned short adcBuf[10] __attribute__ ((at(0x1c0)));
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	static u16 waterTmp __attribute__ ((at(0x1e3)));
+KeySwGet.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):volatile static unsigned char old_in_status[4]  __attribute__ ((at(0x1ee)));
+KeySwGet.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):volatile static unsigned char in_count[4]  __attribute__ ((at(0x1f2)));
+KeySwGet.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	static unsigned char swCntA __attribute__ ((at(0x1F9)));
+KeySwGet.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	static unsigned char swCntB __attribute__ ((at(0x1FA)));
+KeySwGet.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	static unsigned char swCntC __attribute__ ((at(0x1FB)));
+LEDCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):volatile static unsigned char LEDDispBuf[8]  __attribute__ ((at(0x1e5)));
+TimeInt.c (d:\项目\智能快饮机\fastwater\soft1409v33\c)://static _BUZZER	Buzzer __attribute__ ((at(0x1f2)));
+TimeInt.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):static u8 Table_Run_Max __attribute__ ((at(0x1FC)));	//单次运行的最大值
+TimeInt.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):static u8 Table_Run_Max_Run __attribute__ ((at(0x1Fd)));	//单次运行计数
+TimeInt.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):static u8 Table_Long_Run __attribute__ ((at(0x1Fe)));*/
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):volatile static unsigned char txDat[5] __attribute__ ((at(0x1e0)));

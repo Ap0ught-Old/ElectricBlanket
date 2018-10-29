@@ -1,0 +1,30 @@
+---- waterTmp Matches (31 in 5 files) ----
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):        if(tmp>waterTmp+16)  waterTmp=tmp+16;
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):        else if(tmp<waterTmp-10)  waterTmp=tmp-10;
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):        else  waterTmp=tmp;
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):    else  waterTmp=tmp;
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):        tempBuf[0]=waterTmp;
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):        tempBuf[7]=waterTmp;
+ADC.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):    waterTmp+=(tempBuf[7]-tempBuf[0]);
+Function.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	        //if((mfWaterErro==1)||(waterTmp==0)||(ntcErroL>100)||(ntcErroH>100))
+LEDCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	if(waterTmp >= 100)
+LEDCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):		LEDDispBuf[4] = waterTmp/100;
+LEDCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):	if(waterTmp >= 10)
+LEDCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):		LEDDispBuf[3] = waterTmp/10%10;
+LEDCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):		LEDDispBuf[2] = waterTmp%10;	
+LEDCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):		LEDDispBuf[2] = waterTmp;
+SysInit.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):    waterTmp=100;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            if(waterTmp>WATER_INIT)  adjDiv++;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            offsetA=waterTmp-(waterSet-80);
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            offsetA=waterTmp-(waterSet+4);
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            offsetA=waterTmp-(waterSet+3);
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            offsetA=waterTmp-(waterSet+2);
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            offsetA=waterTmp-(waterSet+1);
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            offsetA=waterTmp-waterSet;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):            offsetA=waterTmp-(waterSet-80);
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):        else  offsetA=waterTmp-waterSet;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):    k = waterTmp << 3;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):    k += waterTmp << 1;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c)://    k+=waterTmp<<1;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c)://    k+=waterTmp>>1;
+WaterCtl.c (d:\项目\智能快饮机\fastwater\soft1409v33\c):        txDat[2]=(unsigned char)(waterTmp>>2);
