@@ -11,7 +11,7 @@ void GetKey(void)
 {
     u8 i;
     u8 new_status;
-	static u8 LongTimeCnt __attribute__ ((at(0x1dc)));
+	static u8 LongTimeCnt __attribute__ ((at(0x1e9)));
 
     for(i = 0; i < CONFIG_IN_NUM; i++)
     {

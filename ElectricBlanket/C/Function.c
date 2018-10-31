@@ -14,7 +14,7 @@ u8 IOZeroSta = 0,IOZeroStaBak = 0;
 
 void OutCtrl(void)
 {
-	if(EnThyOutFlag)	//查询控制输出
+/*	if(EnThyOutFlag)	//查询控制输出
 	{
 		if(IO_ZERO)
 		{
@@ -47,15 +47,14 @@ void OutCtrl(void)
 			_t0af = false;_t0ae = 1;			// enable TM0 Comparator A match interrupt control; clr TM0 Comparator A match interrupt req flg.
 			_tm0al = 0xfa;		               	// set TM0 CCRA=250; Timer interval = 250/125kHz=2ms
 			_tm0ah = 0x00; 	                    
-			_t0on = true;						// turn on Timer0 and reset the timer count
-			
+			_t0on = true;						// turn on Timer0 and reset the timer count			
 		}
 	}
 	else
 	{
 		IO_HEATTR = false;		
 		HeaterFlag = false;			
-	}
+	}*/
 }
 
 #define EN_FLICK	0	//不加热闪烁，置1，不加热时不闪烁，清零
@@ -80,6 +79,23 @@ void Func(void)
 		}
 	}
 
+	if(TRShortFlag)
+	{
+		if(WorkMode != ALARM_MODE)
+		{
+			WorkMode = ALARM_MODE;	//进入报警状态
+			ErrType = ERR_TR_SHORT;
+		}		
+	}
+	
+	if(ZeroFlag)
+	{
+		if(WorkMode != ALARM_MODE)
+		{
+			WorkMode = ALARM_MODE;	//进入报警状态
+			ErrType = ERR_NO_ZERO;
+		}		
+	}
 
     switch(WorkMode)
     {
@@ -199,6 +215,18 @@ void Func(void)
 				if(ErrType == ERR_NO_LOAD)
 				{
 					LED_ORG_REVERSE;
+				}
+				if(ErrType == ERR_TR_SHORT)
+				{
+					LED_RED_REVERSE;
+					LED_ORG_REVERSE;
+					FUSE_OPEN;	//烧保险丝					
+				}
+				if(ErrType == ERR_NO_ZERO)
+				{
+					LED_RED_REVERSE;
+					LED_ORG_REVERSE;
+					LED_YEL_REVERSE;					
 				}
 			}
 	}

@@ -31,9 +31,12 @@ typedef unsigned long 	uint32; 			//32bit
 #define KEY				_pa3	//按键
 #define KEY_PIN			3
 
-#define IO_HEATTR		_pa5	//发热丝控制
+#define IO_HEATTR		_pa6	//发热丝控制
+#define IO_FUSE			_pa7	//控制打开可控硅烧保险丝
+#define FUSE_OPEN		IO_FUSE = true
+#define FUSE_CLOSE		IO_FUSE = false
 
-#define IO_ZERO			_pc0	//过零检测
+#define IO_ZERO			_pb0	//过零检测
 
 #define LED_RED			_pc1	//LED灯
 #define LED_RED_ON		LED_RED = false
@@ -50,8 +53,8 @@ typedef unsigned long 	uint32; 			//32bit
 #define LED_YEL_OFF		LED_YEL = true
 #define LED_YEL_REVERSE	LED_YEL = !LED_YEL
 
-#define ADC_PTC1        0x10	//PTC值
-#define ADC_CURRENT	 	0x11	//保护电流值
+#define ADC_PTC1        0x11	//PTC值
+#define ADC_CURRENT	 	0x13	//保护电流值
 
 #define LOW_40C         0
 #define LOW_50C         1
@@ -96,7 +99,7 @@ typedef struct {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~main.c~~~~~~~~~~~~~~~~~~~~
 extern _t_bits maiFlagA;
-#define PowerDnFlag 	maiFlagA.b0		//掉电标志
+#define ZeroFlag 	maiFlagA.b0		//掉电标志
 #define	ShortFlag       maiFlagA.b1		//短路标志
 #define NoLoadFlag      maiFlagA.b2		//无负载检测
 #define Flag500ms		maiFlagA.b3
@@ -110,8 +113,8 @@ extern _t_bits maiFlagB;
 #define TaskADCRdyFlag      maiFlagB.b1
 #define mf500ms       maiFlagB.b3
 #define Flag100ms  		maiFlagB.b4
-#define mfPumpG       maiFlagB.b5
-#define mfWaterErroL  maiFlagB.b6
+#define TaskChkLoadRdy       maiFlagB.b5
+#define TRShortFlag  maiFlagB.b6
 #define mfSelfCheck   maiFlagB.b7
 
 extern _t_bits LEDG;
@@ -170,6 +173,7 @@ extern _t_bits LEDH;
 #define ERR_NO_ZERO			1
 #define ERR_SHORT			2
 #define ERR_NO_LOAD			3
+#define ERR_TR_SHORT		4
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -185,7 +189,7 @@ extern void WaterCtl(void);
 extern void GetTemp(unsigned short dat);
 extern unsigned char InitEepRom(void);
 extern void SelfDeal(void);
-extern void TM1638Init(void);
+extern void GetLoadValu();
 extern void LedDisplay(void);
 
 extern void i2cStart(void);
@@ -197,7 +201,7 @@ extern u8 TestAck(void);
 extern void i2cWrite(uchar Data);
 extern uchar i2cRead(void);
 extern void DigitalDisp(void);
-extern void LEDTips(void);
+extern void GetPTCValu(void);
 extern void DigitalErrorDisp(u8 Index);
 void PowerOnTips(void);
 extern void WriteEepRom(void);

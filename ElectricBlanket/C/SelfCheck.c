@@ -11,7 +11,7 @@ void SelfDeal(void)
     while(1)
     {
         GCC_CLRWDT();
-        GetAdcDat();
+ //       GetAdcDat();
 
 
 

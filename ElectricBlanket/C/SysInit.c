@@ -5,7 +5,7 @@
 void InitSys(void)
 {
 //	unsigned char i;
-	// System clock setting
+// System clock setting
 	_smod = 0b11100001;					// fsys=fH=8MHz; IDLE mode Disable
 		// Watchdog Timer Setting  
 	_wdtc = 0b01010101;					// set WDT Timeout period= 2^16/fsub=2^16/32.768kHz=2sec; Enable WDT
@@ -15,41 +15,25 @@ void InitSys(void)
 //io
     _pa = 0x00;
     _pac = 0x19;
-    _papu = 0xFE; 
-    
+    _papu = 0x7E; 
+    FUSE_CLOSE;
     _pb = 0x10;
     _pbc  = 0b00000111;
-    _pbpu = 0b11111000;
+    _pbpu = 0b11111000;	//检测过零信号不能中断
 
     _pc    = 0x07;
     _pcc   = 0x01;
     _pcpu  = 0x07;
 	IO_HEATTR = false;						//关断可控硅    
   
-#if 1
-/*    for(i=0;i<100;i++)
-    {
-        keyBuf =_pa & 0x0f;
-        if(_pc2)  
-        	keyBuf |= 0x10;
-        keyBuf&=0x1f;
-        if(keyBuf == (KEY6OZ&KEY10OZ))  
-        	break;
-    }
-    if(i<99) 
-    	mfSelfCheck=1;
-    else  
-    	mfSelfCheck=0;
-*/
-#endif
 //adc init
-    _acerl = 0b00000011;
+    _acerl = 0b00001010;
     _adcr0 = ADC_PTC1;
     _adcr1 = 0x06;
     STAR_ADC();
 //time2 init
     _t2cp = 1;
-    _tm2c0 = 0b00010000;
+    _tm2c0 = 0b00110000;
     _tm2c1 = 0b10101000;
     _tm2al = 0;
     _tm2ah = 0;
@@ -86,16 +70,13 @@ void InitSys(void)
 	_mf0e=1;							// Enable multi-function 0 for Timer0 interrupt
 //int
 // Ext Int 1 Setting
-	_int0s0=1;_int0s1=0;				// Set rising edge interrupt for INT1
-
+	_int0s0 = 1;_int0s1 = 0;				// Set rising edge interrupt for INT1
     //_integ=0x03;
-    _int0e = true;
-    
+    _int0e = true;  
 	// ***Time Base0&1 Setting***
 	_tbc=0b11110101;					// enable Time Base, fTB=fsys/4=2MHz, select TB0 Time-out period=8192/fTB=4.096ms; 
 										// select TB1 Time-out period=32768/fTB=1sec; 
-	_tb0e=1;							// enable Time Base0 interrupt control
-    
+	_tb0e=1;							// enable Time Base0 interrupt control   
     _emi = 1;    
 }
 
@@ -113,8 +94,16 @@ void InitRam(void)
 	Time60Min = 0;
 	FlagStartDetect = false;
 	TaskKeyRdy = false;
-	ShortFlag = false;
-	NoLoadFlag = false;
 	HeaterFlag = false;
 	Time1MinCnt = 0;
+	EnThyOutFlag = false;
+	TRShortFlag = false;
+	ShortFlag = false;
+	NoLoadFlag = false;
+	ZeroFlag = false;
+	
+	ShortCnt1 = 0;
+	ShortCnt2 = 0;
+	AdcCnt = 0;
+	NoZeroTime = 0;
 }

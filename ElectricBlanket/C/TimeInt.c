@@ -32,6 +32,8 @@ void __attribute((interrupt(0x10))) ISR_tmr2 (void)
 //        _tm2ah = (unsigned char)(pumpPwm>>8);
         _t2cp = 1;
     }
+	TaskChkLoadRdy = true;
+	_t2on = false;							// turn off timer 0 to change timer config		
 
 }
 
@@ -47,15 +49,24 @@ void __attribute((interrupt(0x0c))) ISR_tmr0 (void)
 {
 	// off the pump pulse if triac is ON
 	// on the pump pulse if triac is off before zero cross
-	if(IO_HEATTR == 0)
+	if(IO_HEATTR)
 	{											// off the pump if Triac is ON					
 		_t0on = false;							// turn off timer 0 to change timer config
-		IO_HEATTR = true;
-
-	}						// clr TM0 Comparator A match interrupt req flg.	
-		_t0on = false;							// turn off timer 0 to change timer config
 		IO_HEATTR = false;
-	
+		_tm0al=0x13;		               		// set TM0 CCRA=875; Timer interval = 875/125kHz=7ms
+		_tm0ah=0x03; 	                    
+		_t0on = true;							// turn on Timer0 and reset the timer count
+	}
+	else if (!ZeroHalfFlag)
+	{											// on the pump pulse before next zero cross
+		_t0on = false;							// turn off timer 0 to change timer config
+		IO_HEATTR = true;
+		ZeroHalfFlag = true;					// 
+		_tm0al=0xfa;		                	// set TM0 CCRA=250; Timer interval = 250/125kHz=2ms
+		_tm0ah=0x00; 	                    
+		_t0on = true;							// turn on Timer0 and reset the timer count
+	}
+	_t0af=0;									// clr TM0 Comparator A match interrupt req flg.		
 }
 /*********************************************************************************************************
 ** 函数名称: ISR_tmr0
@@ -65,12 +76,8 @@ void __attribute((interrupt(0x0c))) ISR_tmr0 (void)
 ** 全局变量: 无							  
 ** 调用模块: 无
 ********************************************************************************************************/
-//static _BUZZER	Buzzer __attribute__ ((at(0x1f2)));
 
-void PowerOnTips(void)
-{
-}
-#define INIT_NO_DETECT_TIME	5
+#define INIT_NO_DETECT_TIME	3
 unsigned char Time500Cnt = 0,Time1SCnt = 0,Time100Cnt = 0;
 void __attribute((interrupt(0x1c))) ISRTime0Base(void)
 {
@@ -100,6 +107,7 @@ void __attribute((interrupt(0x1c))) ISRTime0Base(void)
 	{
 		Time1SCnt = 0;
 		Time1MinCnt++;
+		NoZeroTime++;
 		Flag1S = true;
 		if(Time1MinCnt > INIT_NO_DETECT_TIME)
 		{
@@ -138,13 +146,35 @@ const u8 Table_1[]={1,2};		//60HZ	//低档	//7.69HZ
 void __attribute((interrupt(0x04))) ISR_int0 (void)
 {
     _int0f=0;
-/*	if(WaterOutFlag)			//可以出水
+    NoZeroTime = 0;
+    ZeroFlag  = false;
+	if(EnThyOutFlag && (WorkMode == RUN_MODE))			//工作模式可以加热
 	{
-		IO_HEATTR = true;		//打开继电器
+		IO_HEATTR = true;					//打开可控硅
+		//**setup value of timer 0 int for off pulse 
+		_t0on = false;						// turn off timer 0 to change timer config
+		_t0af = false;_t0ae = 1;			// enable TM0 Comparator A match interrupt control; clr TM0 Comparator A match interrupt req flg.
+		_tm0al = 0xfa;		               	// set TM0 CCRA=250; Timer interval = 250/125kHz=2ms
+		_tm0ah = 0x00; 	                    
+		_t0on = true;						// turn on Timer0 and reset the timer count
+		
+		
+				
+		ZeroHalfFlag = false;
+		HeaterFlag = true;			//此时是正半波，可以检测电流判断是否断开
 	}
 	else						//关闭
 	{
 		_t0on = false;							// turn off timer 0 to change timer config		
-		IO_HEATTR = true;		//关闭可控硅
-	}*/
+		IO_HEATTR = false;		//关闭可控硅
+		HeaterFlag = false;		//此时是正半波，可以检测电流判断是否断开
+	}  
+	
+	//计算波峰到达时间触发采样
+	_t2on = false;						// turn off timer 0 to change timer config
+	_t2af = false;_t2ae = 1;			// enable TM0 Comparator A match interrupt control; clr TM0 Comparator A match interrupt req flg.
+	_tm2al = 0x06;		               	// set TM0 CCRA=0x0206; Timer interval = 0x0206/125kHz=4.3ms
+	_tm2ah = 0x02; 	                    
+	_t2on = true;						// turn on Timer0 and reset the timer count
+	  
 }

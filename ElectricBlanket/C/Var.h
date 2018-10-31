@@ -37,6 +37,7 @@ EXTERN u8 NoZeroTime;				//无过零信号时间
 EXTERN unsigned char txBuf;
 EXTERN unsigned char txSp;
 EXTERN unsigned char txBit;
+EXTERN u8 ShortCnt1,ShortCnt2,AdcCnt;
 
 
 #endif
